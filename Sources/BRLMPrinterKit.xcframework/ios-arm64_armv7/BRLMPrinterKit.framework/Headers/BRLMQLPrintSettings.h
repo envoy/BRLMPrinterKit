@@ -1,9 +1,9 @@
-//
+// ------------------------------------------------------
 //  BRLMQLPrintSettings.h
 //  BRLMPrinterKit
 //
 //  Copyright © 2018 Brother Industries, Ltd. All rights reserved.
-//
+// ------------------------------------------------------
 
 #import <BRLMPrinterKit/BRLMPrintSettingsProtocol.h>
 #import <BRLMPrinterKit/BRLMPrintImageSettings.h>
@@ -39,6 +39,9 @@
         BRLMQLPrintSettingsLabelSizeDTRollW102,
         BRLMQLPrintSettingsLabelSizeDTRollW102H51,
         BRLMQLPrintSettingsLabelSizeDTRollW102H152,
+        BRLMQLPrintSettingsLabelSizeRoundW12DIA,
+        BRLMQLPrintSettingsLabelSizeRoundW24DIA,
+        BRLMQLPrintSettingsLabelSizeRoundW58DIA,
     };
     
 NS_ASSUME_NONNULL_BEGIN
@@ -56,6 +59,18 @@ Default : 1
 @property (nonatomic) BOOL autoCut;
 @property (nonatomic) BOOL cutAtEnd;
 @property (nonatomic) BRLMPrintSettingsResolution resolution;
+/**
+Range(#) : -20 - 20
+ */
+@property (nonatomic) NSUInteger biColorRedEnhancement;
+/**
+Range(#) : -20 - 20
+ */
+@property (nonatomic) NSUInteger biColorGreenEnhancement;
+/**
+Range(#) : -20 - 20
+ */
+@property (nonatomic) NSUInteger biColorBlueEnhancement;
 
 // override
 - (nullable instancetype)initDefaultPrintSettingsWithPrinterModel:(BRLMPrinterModel)model;

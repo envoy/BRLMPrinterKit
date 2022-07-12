@@ -1,9 +1,9 @@
-//
+// ------------------------------------------------------
 //  BRLMPrinterDefine.h
 //  BRLMPrinterKit
 //
 //  Copyright © 2020 Brother Industries, Ltd. All rights reserved.
-//
+// ------------------------------------------------------
 
 
 
@@ -57,5 +57,13 @@ typedef NS_ENUM(NSInteger, BRLMPrinterModel) {
     BRLMPrinterModelPT_P910BT,
     BRLMPrinterModelRJ_3230B,
     BRLMPrinterModelRJ_3250WB,
+    BRLMPrinterModelPT_D410,
+    BRLMPrinterModelPT_D460BT,
+    BRLMPrinterModelPT_D610BT,
+    BRLMPrinterModelPJ_822,
+    BRLMPrinterModelPJ_823,
+    BRLMPrinterModelPJ_862,
+    BRLMPrinterModelPJ_863,
+    BRLMPrinterModelPJ_883,
     BRLMPrinterModelUnknown,
 };

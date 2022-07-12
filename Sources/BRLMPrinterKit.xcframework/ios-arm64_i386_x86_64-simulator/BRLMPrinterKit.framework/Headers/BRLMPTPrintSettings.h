@@ -1,9 +1,9 @@
-//
+// ------------------------------------------------------
 //  BRLMPTPrintSettings.h
 //  BRLMPrinterKit
 //
 //  Copyright © 2020 Brother Industries, Ltd. All rights reserved.
-//
+// ------------------------------------------------------
 
 #import <BRLMPrinterKit/BRLMPrintSettingsProtocol.h>
 #import <BRLMPrinterKit/BRLMPrintImageSettings.h>
@@ -30,6 +30,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic) BRLMPTPrintSettingsLabelSize labelSize;
 @property (nonatomic) BOOL cutmarkPrint;
+@property (nonatomic) BOOL cutPause;
 @property (nonatomic) BOOL autoCut;
 @property (nonatomic) BOOL halfCut;
 @property (nonatomic) BOOL chainPrint;
