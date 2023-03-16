@@ -1,9 +1,9 @@
-//
+// ------------------------------------------------------
 //  BRLMRJPrintSettings.h
 //  BRLMPrinterKit
 //
 //  Copyright © 2018 Brother Industries, Ltd. All rights reserved.
-//
+// ------------------------------------------------------
 
 #import <BRLMPrinterKit/BRLMPrintSettingsProtocol.h>
 #import <BRLMPrinterKit/BRLMPrintImageSettings.h>

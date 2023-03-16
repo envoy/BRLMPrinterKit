@@ -1,9 +1,9 @@
-//
+// ------------------------------------------------------
 //  BRLMMWPrintSettings.h
 //  BRLMPrinterKit
 //
 //  Copyright © 2020 Brother Industries, Ltd. All rights reserved.
-//
+// ------------------------------------------------------
 
 #import <BRLMPrinterKit/BRLMPrintSettingsProtocol.h>
 #import <BRLMPrinterKit/BRLMPrintImageSettings.h>

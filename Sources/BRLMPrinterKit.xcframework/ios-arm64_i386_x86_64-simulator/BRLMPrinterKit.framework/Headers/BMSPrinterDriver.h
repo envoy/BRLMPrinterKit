@@ -175,7 +175,6 @@
 // This is used only by WIFI and FILE channel.
 // In previous SDKs, RET_CHANNEL_CREATEERROR was used instead, but now we differentiate between these cases.
 // NOTE: With WIFI channel especially, this can occur when user tries to start a job too quickly after a failure.
-// Generally, using "isPrinterReady" API before calling openChannel can avoid this.
 #define RET_CHANNEL_STREAMSTATUS_ERROR     -1011
 
 // These are used only for BT channel
@@ -464,22 +463,16 @@ typedef enum
            timeout:(int)nTimeout;
 
 
-// "wrappers" for isPrinterReady and getPTStatus.
-// * isPrinterReady is useful to check for connectivity before attempting to print.
+// "wrapper" for getPTStatus.
 // * getPTStatus allows to you determine things like the actual connected model, paper inserted, cover open, etc.
 // Refer to the BRPtouchSDK documentation for more details about the format and meaning of the status response.
 
 // TAG: REMOVE_BRPTOUCH_SDK
-// When using the "RemoveBRPtouchSDK" framework, isPrinterReady and getPTStatus are NOT supported
+// When using the "RemoveBRPtouchSDK" framework, getPTStatus is NOT supported
 // for the WIFI channel, because WIFI channel requires using the BRPtouchSDK API.
-// However, for the Bluetooth channel, these functions are implemented internally to the BMS SDK, so you may still
-// use these two APIs.
-
-- (BOOL)isPrinterReady:(PRINTERMODEL)model
-           channelType:(CHANNELTYPE)channelType
-         channelString:(NSString *)channelString; // IPAddress or BTDeviceName
 
 #ifdef REMOVE_BRPTOUCH_SDK
+// Need this struct from other SDK when using our own getPTStatus implementation for Bluetooth.
 typedef struct _PTSTATUSINFO {
     Byte	byHead;						// Head mark
     Byte	bySize;						// Size

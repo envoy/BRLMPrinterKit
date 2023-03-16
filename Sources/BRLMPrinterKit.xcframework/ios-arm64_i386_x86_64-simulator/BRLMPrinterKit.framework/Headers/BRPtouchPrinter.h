@@ -18,6 +18,7 @@
 #import <BRLMPrinterKit/BRPtouchBatteryInfo.h>
 #import <BRLMPrinterKit/BRCustomPaperInfoCommand.h>
 #include <BRLMPrinterKit/BRPtouchTemplateInfo.h>
+#include <BRLMPrinterKit/ImageCreationBlock.h>
 
 #define ERROR_NONE_          0
 #define ERROR_TIMEOUT		-3
@@ -76,6 +77,7 @@
 #define ERROR_OS_VERSION_NOT_SUPPORTED_ -57 // This does not occur in iOS
 #define ERROR_MINIMUM_LENGTH_LIMIT_ -58
 #define ERROR_FAIL_TO_CONVERT_CSV_TO_BLF_ -59
+#define ERROR_RESOLUTION_MODE_ -60
 
 
 //  Message value
@@ -200,8 +202,6 @@ extern NSString *const BRMessageKey;
 - (NSArray *)setCustomPaperInfoCommand:(BRCustomPaperInfoCommand *)customPaperInfoCommand;
 //- (BOOL)setEncryptKey:(NSString*)strKey keyEx:(NSString*)strKeyEx; // Not Available
 
-- (BOOL)isPrinterReady;
-
 - (NSArray *)getSupportPaperArray;
 - (BRPtouchLabelParam *)getCurrentLabelParam;
 
@@ -257,6 +257,7 @@ extern NSString *const BRMessageKey;
 
 - (int)printPDFAtPath:(NSString *)pdfPath pages:(NSUInteger [])indexes length:(NSUInteger)length copy:(int)nCopy;
 - (int)printImage:(CGImageRef)imageRef copy:(int)nCopy;
+- (int)printImagesWithBlock:(NSArray<ImageCreationBlock> *)imageProcList copy:(int)nCopy;
 - (int)printFiles:(NSArray *)filePaths copy:(int)nCopy;
 
 - (int)cancelPrinting;
