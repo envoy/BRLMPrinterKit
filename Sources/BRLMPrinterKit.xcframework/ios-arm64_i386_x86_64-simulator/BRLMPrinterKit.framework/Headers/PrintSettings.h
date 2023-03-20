@@ -105,6 +105,9 @@
 #define keyPJ673PrintSettings @"PJ-673 Print Settings"
 #define keyPJ763MFiPrintSettings @"PJ-763MFi Print Settings"
 #define keyPJ773PrintSettings @"PJ-773 Print Settings"
+#define keyPJ862PrintSettings @"PJ-862 Print Settings"
+#define keyPJ863PrintSettings @"PJ-863 Print Settings"
+#define keyPJ883PrintSettings @"PJ-883 Print Settings"
 #define keyRJ4040PrintSettings @"RJ-4040 Print Settings"
 #define keyRJ4030AiPrintSettings @"RJ-4030Ai Print Settings"
 #define keyRJ4230BPrintSettings @"RJ-4230B Print Settings"
@@ -231,6 +234,10 @@ typedef enum
     kPrinterModelTD4550DNWB,
     kPrinterModelRJ3230B,
     kPrinterModelRJ3250WB,
+    kPrinterModelPJ862,
+    kPrinterModelPJ863,
+    kPrinterModelPJ883,
+    // Add new models at the END of the list, see above!
 
 } PRINTERMODEL;
 
@@ -314,23 +321,56 @@ typedef enum
     kDensityUsePrinterSetting, // use value saved to printer, don't send command
 } DENSITY;
 
-// PJ-7 only
+// PJ-7, PJ-8 only
 typedef enum
 {
     kRollCaseOption_None = 1,
     kRollCaseOption_PARC001_NoAntiCurl,
     kRollCaseOption_PARC001,
     kRollCaseOption_UsePrinterSetting, // use value saved to printer, don't send command
+
+    // Add new items at the END of the enum so as not to affect preferences saved with older SDK
+    
+    // TODO: PJ8 appears to have added an option for PARC001_ShortFeed. The Command Ref Guide indicates it's also for PJ7.
+    //  But the PST does not have this option for PJ7. It does for PJ8. For now, don't add it.
+    //  I need to confirm with BIL whether PJ7 supports this or not.
+    //  If user needs it, they can select it in PST for PJ8 and choose "UsePrinterSetting" option in SDK.
+    //
+    // TODO: PJ8 models added a new "Custom" option for roll case.
+    //   * We could add a new enum "kRollCaseOption_Custom" here;
+    //   * HOWEVER, it seems to require 2 additional commands to be sent to setup the custom "lead position"
+    //     and "feed at end of the job". To support this, I have to add these other options to the PSVC.
+    //   * User can configure all of this using the Printer Setting Tool (PST).
+    //     And, in our SDK user/ISV can already choose the "UsePrinterSetting" option to choose whatever is configured
+    //     with the PST, so we don't send command at print time to override the PST setting.
+    //   * So for now, I will NOT add this new option.
+    
+
 } ROLL_CASE_OPTION;
 
-// PJ-7 only
+// PJ-7, PJ-8 only
+// NOTE: Renamed the enums to be more generic, since PJ8 has changed the speeds associated with the same command value
+// sent to printer as compared to PJ7 models.
+// We can modify the strings used in our GUI by overriding the stringFromPrintSpeed method for each model.
 typedef enum
 {
-    kPrintSpeedOption_65mmpersec = 1, // 2.5 ips
-    kPrintSpeedOption_48mmpersec,     // 1.9 ips
-    kPrintSpeedOption_41mmpersec,     // 1.6 ips
-    kPrintSpeedOption_27mmpersec,     // 1.1 ips
-    kPrintSpeedOption_UsePrinterSetting, // use value saved to printer, don't send command
+    // NOTE: added new PJ8 only options below "UsePrinterSetting" so as not to change if enum was saved to preferences
+    // with old enum values.
+    // TODO: We should modify save/loadPreferences to use Strings instead of enums for ALL settings so we are free
+    // to change enum value order in future SDK releases.
+    
+
+                                            //*** Old PJ7 enum values were named as below...
+    kPrintSpeedOption_HighSpeed = 1,          // kPrintSpeedOption_65mmpersec = 1, // 2.5 ips
+    kPrintSpeedOption_MedHighSpeed,           // kPrintSpeedOption_48mmpersec,     // 1.9 ips
+    kPrintSpeedOption_MedLowSpeed,            // kPrintSpeedOption_41mmpersec,     // 1.6 ips
+    kPrintSpeedOption_LowSpeed,               // kPrintSpeedOption_27mmpersec,     // 1.1 ips
+    kPrintSpeedOption_UsePrinterSetting,      // use value saved to printer, don't send command
+    kPrintSpeedOption_FastDraftQuality,     // PJ8 only
+    kPrintSpeedOption_FastLineConversion,   // PJ8 only
+    
+    // Add new items at the END of the enum so as not to affect preferences saved with older SDK
+    
 } PRINT_SPEED_OPTION;
 
 //*********************************************************************

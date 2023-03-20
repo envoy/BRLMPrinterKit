@@ -15,4 +15,7 @@ FOUNDATION_EXPORT const unsigned char BRLMPrinterKitVersionString[];
 
 #import <BRLMPrinterKit/BRLMPrinterKit.h>
 #import <BRLMPrinterKit/BRPtouchPrinterKit.h>
+
+#ifndef WLAN_ONLY
 #import <BRLMPrinterKit/BMSPrinterKit.h>
+#endif

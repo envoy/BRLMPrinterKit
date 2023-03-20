@@ -77,12 +77,15 @@
 #define COMPRESS_ENABLED    0x02
 
 #define PJROLLCASE_OFF           1  //Do not user printer case
-#define PJROLLCASE_ON            2  //Use printer case with anti-curling mechanism
-#define PJROLLCASE_WITH_ANTICURL 3   // Use printer case without anti-curling mechanism
+#define PJROLLCASE_ON            2  //Use printer case without anti-curling mechanism
+#define PJROLLCASE_WITH_ANTICURL 3   // Use printer case with anti-curling mechanism
+#define PJROLLCASE_SHORT_FEED    4   // Use printer case 
+#define PJROLLCASE_KEEP_PRINTER_SETTING   -1  // Keep printer setting
 
 //用紙種類
 #define PJ_ROLL      0x01
 #define PJ_CUT_PAPER 0x02
+#define PJ_PERFORATED_ROLL 0x03
 
 //Print Quality
 #define PRINTQUALITY_LOW_RESOLUTION  1 // 高速
@@ -133,5 +136,9 @@
 @property   (assign,nonatomic)BOOL      bUseLegacyHalftoneEngine;
 @property   (assign,nonatomic)BOOL      bUseCopyCommandInTemplatePrint;
 @property   (assign,nonatomic)BOOL      bWaitCompletionOfSendingDataAndFile;
+@property   (assign,nonatomic)int       nForceStretchPrintableArea;
+@property   (assign,nonatomic)int       nBiColorRedEnhancement;
+@property   (assign,nonatomic)int       nBiColorGreenEnhancement;
+@property   (assign,nonatomic)int       nBiColorBlueEnhancement;
 
 @end

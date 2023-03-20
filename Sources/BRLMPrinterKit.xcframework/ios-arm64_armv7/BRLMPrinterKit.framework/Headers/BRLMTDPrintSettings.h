@@ -1,9 +1,9 @@
-//
+// ------------------------------------------------------
 //  BRLMTDPrintSettings.h
 //  BRLMPrinterKit
 //
 //  Copyright © 2018 Brother Industries, Ltd. All rights reserved.
-//
+// ------------------------------------------------------
 
 #import <BRLMPrinterKit/BRLMPrintSettingsProtocol.h>
 #import <BRLMPrinterKit/BRLMPrintImageSettings.h>
@@ -36,6 +36,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic) BOOL peelLabel;
 @property (nonatomic) BOOL autoCut;
 @property (nonatomic) BOOL cutAtEnd;
+@property (nonatomic) UInt8 autoCutForEachPageCount;
 
 // override
 - (nullable instancetype)initDefaultPrintSettingsWithPrinterModel:(BRLMPrinterModel)model;

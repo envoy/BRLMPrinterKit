@@ -18,6 +18,9 @@
 #import <BRLMPrinterKit/PJ673PrintSettings.h>
 #import <BRLMPrinterKit/PJ763MFiPrintSettings.h>
 #import <BRLMPrinterKit/PJ773PrintSettings.h>
+#import <BRLMPrinterKit/PJ862PrintSettings.h>
+#import <BRLMPrinterKit/PJ863PrintSettings.h>
+#import <BRLMPrinterKit/PJ883PrintSettings.h>
 #import <BRLMPrinterKit/GenericMobileLabelModelPrintSettings.h>
 #import <BRLMPrinterKit/RJ4030AiPrintSettings.h>
 #import <BRLMPrinterKit/RJ4040PrintSettings.h>
@@ -41,6 +44,9 @@
 #import <BRLMPrinterKit/PJ673PrintSettingsViewController.h>
 #import <BRLMPrinterKit/PJ763MFiPrintSettingsViewController.h>
 #import <BRLMPrinterKit/PJ773PrintSettingsViewController.h>
+#import <BRLMPrinterKit/PJ862PrintSettingsViewController.h>
+#import <BRLMPrinterKit/PJ863PrintSettingsViewController.h>
+#import <BRLMPrinterKit/PJ883PrintSettingsViewController.h>
 #import <BRLMPrinterKit/GenericMobileLabelModelPrintSettingsViewController.h>
 #import <BRLMPrinterKit/RJ4030AiPrintSettingsViewController.h>
 #import <BRLMPrinterKit/RJ4040PrintSettingsViewController.h>

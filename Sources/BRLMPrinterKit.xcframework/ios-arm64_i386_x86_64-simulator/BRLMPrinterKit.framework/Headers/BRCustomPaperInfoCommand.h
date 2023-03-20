@@ -34,6 +34,7 @@ typedef enum  {
     MarkPosition = 8,
     MarkHeight = 9,
     DisplayName = 10,
+    NotSupportPrinter = 11,
 }ErrorParameterName;
 
 typedef enum  {
@@ -99,8 +100,8 @@ typedef enum  {
 
 - (NSData *) getCustomPaperInfoCommandData: (NSMutableArray **)errorArr;
 
-- (NSString *) valueOfErrorParameter:(ErrorParameterName)errorParameterName;
-- (NSString *) valueOfErrorParameterDetail:(ErrorParameterDetail)errorParameterDetail;
++ (NSString *) valueOfErrorParameter:(ErrorParameterName)errorParameterName;
++ (NSString *) valueOfErrorParameterDetail:(ErrorParameterDetail)errorParameterDetail;
 
 @end
 
