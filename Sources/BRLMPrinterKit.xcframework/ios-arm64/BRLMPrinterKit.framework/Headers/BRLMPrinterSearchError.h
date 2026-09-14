@@ -12,6 +12,7 @@ typedef NS_ENUM(NSInteger, BRLMPrinterSearchErrorCode) {
     BRLMPrinterSearchErrorCanceled,
     BRLMPrinterSearchErrorAlreadySearching,
     BRLMPrinterSearchErrorUnsupported,
+    BRLMPrinterSearchErrorCommunicationError,
     BRLMPrinterSearchErrorUnknownError,
 };
 

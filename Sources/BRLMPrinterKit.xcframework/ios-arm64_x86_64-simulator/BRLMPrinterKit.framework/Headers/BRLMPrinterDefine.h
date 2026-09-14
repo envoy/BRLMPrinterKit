@@ -104,5 +104,9 @@ typedef NS_ENUM(NSInteger, BRLMPrinterModel) {
     BRLMPrinterModelRJ_4255WB,
     BRLMPrinterModelPT_E720BT,
     BRLMPrinterModelPT_E920BT,
+    BRLMPrinterModelQL_580N,
+    BRLMPrinterModelRJ_2031,
+    BRLMPrinterModelRJ_2131,
+    BRLMPrinterModelPT_P750Wc,
     BRLMPrinterModelUnknown,
 };

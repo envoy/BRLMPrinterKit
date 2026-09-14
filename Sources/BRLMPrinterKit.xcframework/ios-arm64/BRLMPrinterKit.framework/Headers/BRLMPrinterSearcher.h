@@ -16,9 +16,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)init __unavailable;
 - (instancetype)copy __unavailable;
 + (BRLMPrinterSearchResult *)startNetworkSearch:(nullable BRLMNetworkSearchOption *)searchOption callback:(nullable void (^)(BRLMChannel *channel))callback;
++ (BRLMPrinterSearchResult *)startNetworkSearch:(nullable BRLMNetworkSearchOption *)searchOption ipAddress:(NSString * _Nonnull)ipAddress;
 
-
-//+ (void)startNetworkSearch:(nullable BRLMNetworkSearchOption *)searchOption didFindcallback:(nullable void (^)(BRLMChannel *channel))callback didFinish:(nullable void (^)(BRLMPrinterSearchResult *result))callback;
 
 
 
