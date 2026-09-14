@@ -1,5 +1,5 @@
 framework module BRLMPrinterKit {
-  umbrella header "BRLMPrinterKit+BRPtouchPrinterKit+BMSPrinterKit.h"
+  umbrella header "BRLMPrinterKit+BRPtouchPrinterKit.h"
 
   export *
   module * { export * }

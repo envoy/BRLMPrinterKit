@@ -1,5 +1,5 @@
 //
-//  BRLMPrinterKit+BRPtouchPrinterKit+BMSPrinterKit.h
+//  BRLMPrinterKit+BRPtouchPrinterKit.h
 //  BRLMPrinterKit
 //
 //  Copyright © 2020 Brother Industries, Ltd. All rights reserved.
@@ -15,7 +15,3 @@ FOUNDATION_EXPORT const unsigned char BRLMPrinterKitVersionString[];
 
 #import <BRLMPrinterKit/BRLMPrinterKit.h>
 #import <BRLMPrinterKit/BRPtouchPrinterKit.h>
-
-#ifndef WLAN_ONLY
-#import <BRLMPrinterKit/BMSPrinterKit.h>
-#endif

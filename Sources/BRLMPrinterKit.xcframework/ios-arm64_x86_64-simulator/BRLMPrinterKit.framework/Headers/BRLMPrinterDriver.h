@@ -93,8 +93,13 @@ typedef _Nullable CGImageRef (^BRLMPrinterDriverPrintImageClosure)(void) NS_REFI
 - (BRLMRequestPrinterInfoResult<NSNumber *>*) requestPrinterInternalModelFlag;
 ///This api is for Brother applications. We do not recommend you to use it.
 - (BRLMRequestPrinterInfoResult<NSNumber *> *) requestIsBootMode;
+///This api is for Brother applications. We do not recommend you to use it.
+- (BRLMRequestPrinterInfoResult<NSMutableArray<NSString*> *> *) requestSearchAvailableSSID:(NSUInteger)waitTime;
 ///This api is for swift compatibility. We do not recommend you to use it.
 - (BRLMPrintError *)printImageWithClosuresSwift:(NSArray<BRLMPrinterDriverPrintImageClosuresWrapper*>*)closures settings:(id<BRLMPrintSettingsProtocol>)settings;
+///This api is for Brother applications. We do not recommend you to use it.
+- (BRLMRequestPrinterInfoResult<NSString *> *) requestBluetoothLocalName;
+
 @end
 
 ///This class is for swift compatibility. We do not recommend you to use it.
