@@ -20,18 +20,27 @@ Measured against `libs/Net` and `libs/BT_Net` of the 4.13.2 download:
 | Swift module name | `BRLMPrinterKit` | `BRLMPrinterKit` |
 | Bundle identifier | `com.brother.BRLMPrinterKit` | `com.brother.BRLMPrinterKit` |
 | Links `ExternalAccessory` | yes | **no** |
+| References `EAAccessoryManager`, `EASession` | yes | **no** |
 | Links `CoreBluetooth` | yes | yes |
+| References `CBCentralManager`, `CBUUID` | yes | yes, identical |
 | Minimum iOS | 14.0 | 14.0 |
 | Built with | Swift 6.1 (effective-5.10) | Swift 6.1 (effective-5.10) |
 | arm64 binary size | 4,068,856 B | 4,024,760 B |
 
-The only meaningful difference is the dropped `ExternalAccessory` link. That
-removes the MFi accessory surface, so a consuming app needs no
+The only meaningful difference is the dropped MFi surface. `Net` references no
+`EAAccessoryManager` or `EASession`, so a consuming app needs no
 `UISupportedExternalAccessoryProtocols` entry and no MFi declarations.
 
-It does **not** remove Bluetooth from the API. The headers are identical and
-`CoreBluetooth` is still linked, so Bluetooth channel calls compile against the
-Net product and fail only at runtime. The Net product is a linkage guarantee,
+Brother's "Net" name is misleading and must not be repeated uncritically in our
+docs. `Net` is **not** network-only: it references `CBCentralManager` and
+`CBUUID` exactly as `BT_Net` does, so Bluetooth Low Energy is fully present. An
+app built on the Net product still uses CoreBluetooth, so it still requires
+`NSBluetoothAlwaysUsageDescription` and still shows the iOS Bluetooth
+permission prompt. What it drops is MFi / Classic Bluetooth, nothing else.
+
+Nor does it remove Bluetooth from the API surface. The headers are identical, so
+Bluetooth channel calls compile against the Net product and fail only at
+runtime. The Net product is a linkage guarantee,
 not a compile-time one.
 
 The repo's current `Sources/BRLMPrinterKit.xcframework` is byte-identical to the
@@ -71,8 +80,8 @@ import PackageDescription
 //
 // This package vends two builds of that SDK:
 //
-//   BRLMPrinterKit     Bluetooth + network (Brother's BT_Net build)
-//   BRLMPrinterKitNet  network only        (Brother's Net build)
+//   BRLMPrinterKit     MFi/Classic Bluetooth + BLE + network (Brother's BT_Net)
+//   BRLMPrinterKitNet  BLE + network, no MFi                 (Brother's Net)
 //
 // Depend on exactly one, never both. Both vend the module `BRLMPrinterKit` and
 // the bundle identifier `com.brother.BRLMPrinterKit`, so linking both puts two
@@ -80,22 +89,25 @@ import PackageDescription
 // `import BRLMPrinterKit` ambiguous. SwiftPM cannot enforce this; it is on the
 // consumer to pick one.
 //
-// The Net build differs only in that it does not link ExternalAccessory, so it
-// needs no MFi accessory declarations. The headers are identical and
-// CoreBluetooth is still linked, so Bluetooth APIs still compile against
-// BRLMPrinterKitNet and fail only at runtime.
+// The Net build differs only in dropping the ExternalAccessory link, so it needs
+// no MFi accessory declarations. Despite Brother's name it is NOT network-only:
+// it references CBCentralManager and CBUUID exactly as BT_Net does, so BLE still
+// works and the app still needs NSBluetoothAlwaysUsageDescription.
+//
+// Neither product restricts the API at compile time. The headers are identical,
+// so Bluetooth calls compile against BRLMPrinterKitNet and fail only at runtime.
 
 let package = Package(
     name: "BRLMPrinterKit",
     platforms: [.iOS(.v14)],
     products: [
-        // Bluetooth + network. Mutually exclusive with BRLMPrinterKitNet.
+        // MFi + BLE + network. Mutually exclusive with BRLMPrinterKitNet.
         .library(
             name: "BRLMPrinterKit",
             targets: [
                 "BRLMPrinterKit"
             ]),
-        // Network only. Mutually exclusive with BRLMPrinterKit.
+        // BLE + network, no MFi. Mutually exclusive with BRLMPrinterKit.
         .library(
             name: "BRLMPrinterKitNet",
             targets: [
@@ -235,8 +247,66 @@ places, nearest first:
   add the mutual-exclusivity contract and what the Net build does and does not
   guarantee. The existing note about tag `v4.13.0` and branch
   `ms/update-version4.13.0Binary` is unrelated and stays as written.
-- `README.md`: document the two products, when to choose each, and the
-  mutual-exclusivity contract.
+- `README.md`: a products section with the comparison table, guidance on which
+  to choose, and the mutual-exclusivity contract. Content specified below.
+
+## README content
+
+`README.md` gains a products section directly below the title, before the
+licence reproduction. Exact content:
+
+```markdown
+## Products
+
+This package vends two Brother builds of the same SDK. **Depend on exactly one,
+never both.**
+
+| | `BRLMPrinterKit` | `BRLMPrinterKitNet` |
+|---|---|---|
+| Brother build | `BT_Net` | `Net` |
+| Vendored at | `Sources/BT_Net/` | `Sources/Net/` |
+| Wi-Fi / network | yes | yes |
+| Bluetooth Low Energy | yes | yes |
+| MFi / Classic Bluetooth | yes | **no** |
+| Links `ExternalAccessory` | yes | **no** |
+| Links `CoreBluetooth` | yes | yes |
+| Needs `UISupportedExternalAccessoryProtocols` | yes | no |
+| Needs `NSBluetoothAlwaysUsageDescription` | yes | yes |
+| Module you `import` | `BRLMPrinterKit` | `BRLMPrinterKit` |
+| Bundle identifier | `com.brother.BRLMPrinterKit` | `com.brother.BRLMPrinterKit` |
+| Public headers | 36 | 36, byte-identical |
+| Minimum iOS | 14.0 | 14.0 |
+| Slices | `ios-arm64`, `ios-arm64_x86_64-simulator` | same |
+| arm64 binary | 4,068,856 B | 4,024,760 B |
+
+Brother ships only these two builds. There is no Bluetooth-only build:
+`BT_Net` means Bluetooth **and** network.
+
+### Which to choose
+
+Take `BRLMPrinterKitNet` if you do not talk to MFi / Classic Bluetooth printers.
+It drops the `ExternalAccessory` link, so the app needs no MFi accessory
+declarations and no `UISupportedExternalAccessoryProtocols` entry.
+
+Despite the name, it is **not** network-only. It references `CBCentralManager`
+and `CBUUID` exactly as `BT_Net` does, so Bluetooth Low Energy still works and
+the app still needs `NSBluetoothAlwaysUsageDescription` and still shows the iOS
+Bluetooth permission prompt. Only the MFi path is gone.
+
+Take `BRLMPrinterKit` if you need MFi / Classic Bluetooth printers.
+
+### Why exactly one
+
+Both products vend the module `BRLMPrinterKit` and the bundle identifier
+`com.brother.BRLMPrinterKit`. Depending on both puts two copies of
+`BRLMPrinterKit.framework` in the app bundle and makes `import BRLMPrinterKit`
+ambiguous. SwiftPM cannot declare two products as conflicting, so nothing fails
+at resolution or build time; the contract is yours to keep.
+
+Neither product restricts the API at compile time. The headers are identical
+across both, so Bluetooth calls compile against `BRLMPrinterKitNet` and fail
+only at runtime.
+```
 
 ## Repository impact
 
