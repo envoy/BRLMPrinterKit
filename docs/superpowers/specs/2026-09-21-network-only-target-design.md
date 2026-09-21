@@ -56,6 +56,7 @@ must be rewritten to name both paths.
 `Package.swift`:
 
 ```swift
+platforms: [.iOS(.v14)],
 products: [
     .library(name: "BRLMPrinterKit",    targets: ["BRLMPrinterKit"]),
     .library(name: "BRLMPrinterKitNet", targets: ["BRLMPrinterKitNet"]),
@@ -77,6 +78,46 @@ consumer imports is `BRLMPrinterKit` for both products, regardless of target
 name. Renaming or relocating the xcframework directory does not invalidate
 Brother's signature; both were verified to still report `valid on disk` and
 `satisfies its Designated Requirement` after being moved.
+
+## Platform floor
+
+The manifest currently declares no `platforms:` at all, so SwiftPM applies its
+default minimum and nothing stops a consumer below the SDK's real floor from
+resolving the package. The manifest gains:
+
+```swift
+platforms: [.iOS(.v14)],
+```
+
+14.0 is what the binaries actually support, measured on every slice of both
+variants rather than taken from documentation:
+
+| Slice | `platform` | `minos` |
+|---|---|---|
+| BT_Net `ios-arm64` | 2 (iOS) | 14.0 |
+| BT_Net `ios-arm64_x86_64-simulator` | 7 (iOS simulator) | 14.0 |
+| Net `ios-arm64` | 2 (iOS) | 14.0 |
+| Net `ios-arm64_x86_64-simulator` | 7 (iOS simulator) | 14.0 |
+
+The floor is declared as 14 because that is what the vendored binaries support,
+not what any one consumer happens to target. `.iOS(.v14)` is valid at this
+package's `swift-tools-version: 5.6`; it was confirmed to parse and to be
+reported by `swift package describe` as `Name: ios / Version: 14.0`.
+
+This does not break the existing consumer. `envoy-ipad`'s local `PrinterKit`
+package declares `platforms: [.iOS(.v15), .macCatalyst(.v15)]`, already above
+the new floor, and pins this package with `exact: "4.13.2"`. A consumer below
+14 would now fail to resolve, which is the intent.
+
+Declaring `platforms:` sets a minimum version; it cannot express "iOS only".
+Platform exclusivity for a binary-only package comes from which slices the
+xcframework ships, not from the manifest.
+
+Noted and deliberately out of scope: `PrinterKit` declares `.macCatalyst(.v15)`,
+but neither xcframework ships a Mac Catalyst slice. SwiftPM infers Catalyst
+support from the iOS declaration, so this change neither causes nor fixes that
+mismatch. It is pre-existing and should be raised separately against
+`envoy-ipad`.
 
 ## The mutual-exclusivity contract
 
@@ -114,7 +155,8 @@ already ignores `.DS_Store`.
 The following checks are settled, and follow the existing by-hand process in
 `CLAUDE.md`:
 
-- `swift package describe` lists both products and both binary targets.
+- `swift package describe` lists both products and both binary targets, and
+  reports the platform as iOS 14.0.
 - `codesign --verify --deep --strict --verbose=2` passes on both xcframeworks.
 - `codesign -dv` reports Team ID `5HCL85FLGW` on both.
 - The Net xcframework ships `ios-arm64` and `ios-arm64_x86_64-simulator` slices,
