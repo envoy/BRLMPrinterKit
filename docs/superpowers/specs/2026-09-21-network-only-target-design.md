@@ -64,7 +64,12 @@ mutual-exclusivity contract:
 
 import PackageDescription
 
-// This package vends two builds of the same Brother SDK:
+// A thin wrapper around Brother's closed-source Print SDK for iOS, vendored
+// unmodified under Brother's EULA (see EULA.pdf). Downloads, release notes and
+// API documentation:
+// https://support.brother.com/g/s/es/dev/en/mobilesdk/ios/index.html?c=eu_ot&lang=en&navi=offall&comple=on&redirect=on#ver4
+//
+// This package vends two builds of that SDK:
 //
 //   BRLMPrinterKit     Bluetooth + network (Brother's BT_Net build)
 //   BRLMPrinterKitNet  network only        (Brother's Net build)
@@ -158,6 +163,49 @@ support from the iOS declaration, so this change neither causes nor fixes that
 mismatch. It is pre-existing and should be raised separately against
 `envoy-ipad`.
 
+## Toolchain, and why `swift-tools-version` stays at 5.6
+
+Brother builds the framework with Swift 6.1, which raises the question of
+whether this package's `swift-tools-version: 5.6` should follow it. It should
+not. The two numbers describe different things:
+
+- `swift-compiler-version` in the `.swiftinterface` is the compiler Brother
+  built with. It constrains the *consumer's* compiler, which must be able to
+  type-check that interface.
+- `swift-tools-version` is the minimum toolchain that can parse this manifest
+  and the `PackageDescription` API level available inside it. It says nothing
+  about the vendored binary and imposes nothing on consumer code.
+
+Bumping it therefore would not express "needs Swift 6.1." It would only raise
+the floor on which Xcode can read the manifest, an imprecise proxy, and no
+tools-version means 6.1 specifically.
+
+Nothing in the manifest needs more than 5.6 either: `platforms:` and
+`.binaryTarget` both require only 5.3, and the manifest above was confirmed to
+resolve at 5.6.
+
+The interface is also far more conservative than "built with 6.1" suggests. The
+entire Swift surface is one extension:
+
+```swift
+extension BRLMPrinterKit.BRLMPrinterDriver {
+  public typealias PrintImageClosure = () -> Swift.Unmanaged<CoreGraphics.CGImage>?
+  public func printImage(withClosures: [BRLMPrinterKit.BRLMPrinterDriver.PrintImageClosure],
+                         settings: any BRLMPrinterKit.BRLMPrintSettingsProtocol) -> BRLMPrinterKit.BRLMPrintError
+}
+```
+
+emitted with `swift-interface-format-version: 1.0`, `-swift-version 5` and
+`-enable-library-evolution`. The only modern syntax in it is `any`, which
+requires a 5.6 compiler. So the real consumer-compiler floor evidenced by the
+interface is about 5.6, not 6.1, and the existing tools-version already matches
+it by coincidence.
+
+Raising the tools-version would be a breaking change for consumers on older
+toolchains in exchange for no enforcement and no feature. The compiler floor
+stays documented where `CLAUDE.md` already puts it: read from the
+`swift-compiler-version` line of the shipped `.swiftinterface`.
+
 ## The mutual-exclusivity contract
 
 Both products vend the same module name and the same bundle identifier. A
@@ -178,8 +226,9 @@ places, nearest first:
 
 ## Documentation changes
 
-- `Package.swift`: comments stating the mutual-exclusivity contract and what the
-  Net build does and does not guarantee, as shown in full above.
+- `Package.swift`: comments stating the mutual-exclusivity contract, what the
+  Net build does and does not guarantee, and a link to Brother's SDK page, as
+  shown in full above. `swift-tools-version` stays at 5.6.
 
 - `CLAUDE.md`: replace the single hardcoded path with the two variant paths;
   restate the update workflow as two drops, from `libs/BT_Net/` and `libs/Net/`;
