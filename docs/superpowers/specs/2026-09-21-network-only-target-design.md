@@ -55,18 +55,57 @@ must be rewritten to name both paths.
 
 `Package.swift`:
 
+`Package.swift` in full, including the comments that carry the
+mutual-exclusivity contract:
+
 ```swift
-platforms: [.iOS(.v14)],
-products: [
-    .library(name: "BRLMPrinterKit",    targets: ["BRLMPrinterKit"]),
-    .library(name: "BRLMPrinterKitNet", targets: ["BRLMPrinterKitNet"]),
-],
-targets: [
-    .binaryTarget(name: "BRLMPrinterKit",
-                  path: "./Sources/BT_Net/BRLMPrinterKit.xcframework"),
-    .binaryTarget(name: "BRLMPrinterKitNet",
-                  path: "./Sources/Net/BRLMPrinterKit.xcframework"),
-]
+// swift-tools-version: 5.6
+// The swift-tools-version declares the minimum version of Swift required to build this package.
+
+import PackageDescription
+
+// This package vends two builds of the same Brother SDK:
+//
+//   BRLMPrinterKit     Bluetooth + network (Brother's BT_Net build)
+//   BRLMPrinterKitNet  network only        (Brother's Net build)
+//
+// Depend on exactly one, never both. Both vend the module `BRLMPrinterKit` and
+// the bundle identifier `com.brother.BRLMPrinterKit`, so linking both puts two
+// copies of BRLMPrinterKit.framework in the app bundle and makes
+// `import BRLMPrinterKit` ambiguous. SwiftPM cannot enforce this; it is on the
+// consumer to pick one.
+//
+// The Net build differs only in that it does not link ExternalAccessory, so it
+// needs no MFi accessory declarations. The headers are identical and
+// CoreBluetooth is still linked, so Bluetooth APIs still compile against
+// BRLMPrinterKitNet and fail only at runtime.
+
+let package = Package(
+    name: "BRLMPrinterKit",
+    platforms: [.iOS(.v14)],
+    products: [
+        // Bluetooth + network. Mutually exclusive with BRLMPrinterKitNet.
+        .library(
+            name: "BRLMPrinterKit",
+            targets: [
+                "BRLMPrinterKit"
+            ]),
+        // Network only. Mutually exclusive with BRLMPrinterKit.
+        .library(
+            name: "BRLMPrinterKitNet",
+            targets: [
+                "BRLMPrinterKitNet"
+            ])
+    ],
+    targets: [
+        .binaryTarget(
+            name: "BRLMPrinterKit",
+            path: "./Sources/BT_Net/BRLMPrinterKit.xcframework"),
+        .binaryTarget(
+            name: "BRLMPrinterKitNet",
+            path: "./Sources/Net/BRLMPrinterKit.xcframework")
+    ]
+)
 ```
 
 Product name `BRLMPrinterKit` is unchanged, so `envoy-ipad` is unaffected by the
@@ -126,10 +165,21 @@ consumer must link exactly one. Linking both places two copies of
 `BRLMPrinterKit.framework` in the app bundle and makes `import BRLMPrinterKit`
 ambiguous.
 
-SwiftPM cannot express or enforce this. Documentation is the only enforcement
-available, so it is stated in both `README.md` and `CLAUDE.md`.
+SwiftPM cannot express or enforce this. There is no way to declare two products
+as conflicting, and no build-time or resolution-time check will fire. Stating
+the contract is therefore the whole of the mitigation, and it is stated in three
+places, nearest first:
+
+1. `Package.swift`, in a comment above `let package` and on each `.library`.
+   This is the earliest point a consumer reads, and the only one that travels
+   with the manifest they resolve.
+2. `README.md`, for someone choosing a product.
+3. `CLAUDE.md`, so the constraint survives future SDK updates.
 
 ## Documentation changes
+
+- `Package.swift`: comments stating the mutual-exclusivity contract and what the
+  Net build does and does not guarantee, as shown in full above.
 
 - `CLAUDE.md`: replace the single hardcoded path with the two variant paths;
   restate the update workflow as two drops, from `libs/BT_Net/` and `libs/Net/`;
