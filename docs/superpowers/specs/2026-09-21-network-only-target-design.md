@@ -38,6 +38,25 @@ app built on the Net product still uses CoreBluetooth, so it still requires
 `NSBluetoothAlwaysUsageDescription` and still shows the iOS Bluetooth
 permission prompt. What it drops is MFi / Classic Bluetooth, nothing else.
 
+`BRLMChannel` makes the split explicit. It offers three constructors, and the
+MFi one is typed on `BRLMExternalAccessorySerialNumber`, so Brother's
+"Bluetooth" channel *is* the ExternalAccessory path while BLE is separate:
+
+| Constructor | `BRLMPrinterKit` | `BRLMPrinterKitNet` |
+|---|---|---|
+| `initWithWifiIPAddress:` | works | works |
+| `initWithBLELocalName:` | works | works |
+| `initWithBluetoothSerialNumber:` | works | compiles, cannot connect |
+
+All three selectors are present in both binaries, because the headers are
+identical and the Objective-C metadata ships either way. The MFi constructor
+therefore still compiles and still returns a channel against the Net product;
+only the machinery behind it is missing.
+
+This is static evidence: linked frameworks, undefined symbols and selector
+presence. BLE printing on the Net build has not been exercised against real
+hardware, which is one thing the deferred validation should cover.
+
 Nor does it remove Bluetooth from the API surface. The headers are identical, so
 Bluetooth channel calls compile against the Net product and fail only at
 runtime. The Net product is a linkage guarantee,
