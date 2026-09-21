@@ -1,8 +1,60 @@
 # BRLMPrinterKit
 
-A Swift Package of the Brother Print SDK BT_Net for iPhone/iPad.
+A Swift Package of the Brother Print SDK for iPhone/iPad. It vendors both of
+Brother's builds: `BT_Net` (MFi + BLE + network) and `Net` (BLE + network).
 
-For sample projects and more details, [see the Brother developer page](http://www.brother.com/product/dev/mobile/ios/).
+For sample projects and more details, [see the Brother developer page](https://support.brother.com/g/s/es/dev/en/mobilesdk/ios/index.html).
+
+## Products
+
+This package vends two Brother builds of the same SDK. **Depend on exactly one,
+never both.**
+
+| | `BRLMPrinterKit` | `BRLMPrinterKitNet` |
+|---|---|---|
+| Brother build | `BT_Net` | `Net` |
+| Vendored at | `Sources/BT_Net/` | `Sources/Net/` |
+| Wi-Fi / network | yes | yes |
+| Bluetooth Low Energy | yes | yes |
+| MFi / Classic Bluetooth | yes | **no** |
+| Links `ExternalAccessory` | yes | **no** |
+| Links `CoreBluetooth` | yes | yes |
+| Needs `UISupportedExternalAccessoryProtocols` | yes | no |
+| Needs `NSBluetoothAlwaysUsageDescription` | yes | yes |
+| Module you `import` | `BRLMPrinterKit` | `BRLMPrinterKit` |
+| Bundle identifier | `com.brother.BRLMPrinterKit` | `com.brother.BRLMPrinterKit` |
+| Public headers | 36 | 36, byte-identical |
+| Minimum iOS | 14.0 | 14.0 |
+| Slices | `ios-arm64`, `ios-arm64_x86_64-simulator` | same |
+| arm64 binary | 4,068,856 B | 4,024,760 B |
+
+Brother ships only these two builds. There is no Bluetooth-only build:
+`BT_Net` means Bluetooth **and** network.
+
+### Which to choose
+
+Take `BRLMPrinterKitNet` if you do not talk to MFi / Classic Bluetooth printers.
+It drops the `ExternalAccessory` link, so the app needs no MFi accessory
+declarations and no `UISupportedExternalAccessoryProtocols` entry.
+
+Despite the name, it is **not** network-only. It references `CBCentralManager`
+and `CBUUID` exactly as `BT_Net` does, so Bluetooth Low Energy still works and
+the app still needs `NSBluetoothAlwaysUsageDescription` and still shows the iOS
+Bluetooth permission prompt. Only the MFi path is gone.
+
+Take `BRLMPrinterKit` if you need MFi / Classic Bluetooth printers.
+
+### Why exactly one
+
+Both products vend the module `BRLMPrinterKit` and the bundle identifier
+`com.brother.BRLMPrinterKit`. Depending on both puts two copies of
+`BRLMPrinterKit.framework` in the app bundle and makes `import BRLMPrinterKit`
+ambiguous. SwiftPM cannot declare two products as conflicting, so nothing fails
+at resolution or build time; the contract is yours to keep.
+
+Neither product restricts the API at compile time. The headers are identical
+across both, so Bluetooth calls compile against `BRLMPrinterKitNet` and fail
+only at runtime.
 
 
 ## Software: Brother Print SDK
