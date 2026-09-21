@@ -67,7 +67,7 @@ import PackageDescription
 // A thin wrapper around Brother's closed-source Print SDK for iOS, vendored
 // unmodified under Brother's EULA (see EULA.pdf). Downloads, release notes and
 // API documentation:
-// https://support.brother.com/g/s/es/dev/en/mobilesdk/ios/index.html?c=eu_ot&lang=en&navi=offall&comple=on&redirect=on#ver4
+// https://support.brother.com/g/s/es/dev/en/mobilesdk/ios/index.html
 //
 // This package vends two builds of that SDK:
 //
