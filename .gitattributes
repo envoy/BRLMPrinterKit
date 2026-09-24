@@ -1,0 +1,9 @@
+# Text here is LF in the repository and diffs normally.
+* text=auto
+
+# A vendored SDK is code signed, so its bytes are the artifact. Brother ships
+# ten printer definition files per slice with CRLF, and _CodeSignature/
+# CodeResources seals a SHA-1 and a SHA-256 of every resource it carries.
+# Normalising one line ending breaks that seal, and nothing here builds, so
+# nothing else would catch it. See CLAUDE.md.
+Sources/** -text -diff

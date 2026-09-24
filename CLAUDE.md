@@ -23,8 +23,21 @@ The only consumer is `envoy-ipad`, via its local `PrinterKit` package, pinned wi
 - List slices: `plutil -p Sources/BT_Net/BRLMPrinterKit.xcframework/Info.plist`
 - Verify the signature is intact: `codesign --verify --deep --strict --verbose=2 Sources/BT_Net/BRLMPrinterKit.xcframework` (expect "valid on disk" and "satisfies its Designated Requirement"); repeat for `Sources/Net/`
 - Read the Team ID: `codesign -dv Sources/BT_Net/BRLMPrinterKit.xcframework` (this only displays the signature; it does not validate it)
+- Verify the vendored bytes on any platform, macOS or not: `python3 scripts/verify-seals.py`
 
 To actually compile against the SDK, build a consuming iOS app or package (e.g. `envoy-ipad`), not this repo.
+
+## The bytes are the artifact
+
+Nothing here compiles, so a damaged xcframework is invisible until a consumer links it. Both builds are code signed, and `_CodeSignature/CodeResources` records a SHA-1 and a SHA-256 of every resource the framework carries, so changing one byte of any one of them makes the artifact read as modified.
+
+Brother ships ten printer definition files per slice with CRLF: `bsr403ad.txt`, `bsr404ad.txt`, `bsr423ad.txt`, `bst40ad.txt`, `bst41nad.txt`, `bst441ad.txt`, `bst442ad.txt`, `bst451ad.txt`, `bst452ad.txt`, `bst455ad.txt`. The other 31 `.txt` files beside them are LF, and none of the 41 carries a NUL byte, so git reads every one as text and rewrites those ten on any machine where `core.autocrlf` is set. That is how `Net` arrived damaged in `v4.13.2-net` while `BT_Net`, added earlier from a differently configured machine, stayed intact.
+
+`.gitattributes` marks `Sources/**` as `-text -diff`, which is what stops it. Do not narrow that rule, and do not vendor an artifact outside `Sources/`. `scripts/verify-seals.py` recomputes every seal in both products and runs in CI on each pull request, once on a normal checkout and once on a checkout configured to rewrite line endings.
+
+When it reports drift, restore the vendor's bytes. Never regenerate a signature and never edit a sealed file. The EULA covers an unmodified redistributable, and a signature minted here would be ours rather than Brother's.
+
+Both products seal two simulator `.swiftmodule` binaries that Brother does not ship, `arm64-apple-ios-simulator.swiftmodule` and `x86_64-apple-ios-simulator.swiftmodule`, and carry `.swiftinterface` files in their place. This is identical in `BT_Net` and `Net`, so it is Brother's own distribution rather than damage here. `verify-seals.py` expects exactly those two absences and fails on any other. It does mean `codesign --verify --strict` has something to report in the simulator slice even for a pristine download.
 
 ## Versioning
 
@@ -34,19 +47,21 @@ Toolchain floor is whatever Brother built the current xcframework with; read it 
 
 ## Updating the SDK (the only real workflow)
 
-Each release is one commit that replaces the whole xcframework, done on a branch and merged via PR, then tagged. There is no CI in this repo; the checks below are run by hand.
+Each release is one commit that replaces the whole xcframework, done on a branch and merged via PR, then tagged. The only CI here verifies the vendored signatures; every other check below is run by hand.
 
 1. Download the new SDK bundle from Brother's developer page (link in README). One download contains both builds, under `libs/BT_Net/` and `libs/Net/`.
-2. Replace **both** xcframeworks wholesale: Brother's `libs/BT_Net/BRLMPrinterKit.xcframework` goes to `Sources/BT_Net/`, and `libs/Net/BRLMPrinterKit.xcframework` goes to `Sources/Net/`. Keep both paths and Brother's filename identical because `Package.swift` hardcodes them, and do not copy Brother's `.DS_Store` files in. Do not hand-edit anything inside either xcframework; the EULA forbids modifying the redistributable and the code signature would break.
+2. Replace **both** xcframeworks wholesale: Brother's `libs/BT_Net/BRLMPrinterKit.xcframework` goes to `Sources/BT_Net/`, and `libs/Net/BRLMPrinterKit.xcframework` goes to `Sources/Net/`. Keep both paths and Brother's filename identical because `Package.swift` hardcodes them, and do not copy Brother's `.DS_Store` files in. Do not hand-edit anything inside either xcframework; the EULA forbids modifying the redistributable and the code signature would break. Unzip Brother's archive with a tool that preserves bytes, and do not let an editor or a sync client touch the tree.
 3. Confirm each new xcframework still ships `ios-arm64` and `ios-arm64_x86_64-simulator` slices and a `PrivacyInfo.xcprivacy` in each.
 4. Run `codesign --verify --deep --strict` on both and confirm the Team ID is still `5HCL85FLGW`.
-5. Diff `Headers/` against `main` and note removed or renumbered API in the PR description. Also diff `BT_Net` against `Net` headers; they have been byte-identical so far, and if that ever stops being true the README table needs revisiting. Brother's implicit-value `NS_ENUM`s (e.g. `BRLMPrinterModel`, `BRLMPrinterSearchError`) shift raw values when cases are inserted before `Unknown`, so grep the consumer for persisted or transmitted `rawValue`s.
-6. Commit, PR to `main`, then tag the merge commit `vX.Y.Z` and push the tag.
-7. Bump the `exact:` pin in `envoy-ipad`'s `PrinterKit/Package.swift`.
+5. Run `python3 scripts/verify-seals.py`. It recomputes every seal in both products and is the check that catches a resource altered in transit. CI runs it on the pull request as well, including on a checkout configured to rewrite line endings.
+6. Diff `Headers/` against `main` and note removed or renumbered API in the PR description. Also diff `BT_Net` against `Net` headers; they have been byte-identical so far, and if that ever stops being true the README table needs revisiting. Brother's implicit-value `NS_ENUM`s (e.g. `BRLMPrinterModel`, `BRLMPrinterSearchError`) shift raw values when cases are inserted before `Unknown`, so grep the consumer for persisted or transmitted `rawValue`s.
+7. Commit, PR to `main`, then tag the merge commit `vX.Y.Z` and push the tag.
+8. Bump the `exact:` pin in `envoy-ipad`'s `PrinterKit/Package.swift`.
 
 ### Known state to be aware of
 
 - Tag `v4.13.0` points at `a677f6c` on branch `ms/update-version4.13.0Binary` and is not reachable from `main`, though the same 4.13.0 SDK content was merged to `main` as `830e6ae`. `envoy-ipad` pins that revision hash, so do not rebase, delete, or force-push that branch.
+- Tag `v4.13.2-net` points at `3c24e4a`, where the `Net` artifact carries twenty line ending normalised resources and fails its own signature. The bytes are repaired on `main` after that tag. Anything pinning `v4.13.2-net` is pinning the damaged artifact and needs moving to the tag cut from the repair. The tag itself was left in place rather than moved, because a moved tag changes resolved content under consumers that have already cached it.
 
 ## Licensing constraint
 

@@ -1,0 +1,28 @@
+name: Vendored SDK signatures
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  seals:
+    name: Seals match the vendor signature
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 scripts/verify-seals.py
+
+  normalisation:
+    name: Seals survive a line ending rewriting checkout
+    runs-on: ubuntu-latest
+    steps:
+      # A checkout on a machine configured this way is what damaged the Net
+      # artifact in v4.13.2-net. This job fails if .gitattributes ever stops
+      # holding the vendored tree binary.
+      - run: |
+          git config --global core.autocrlf true
+          git config --global core.eol crlf
+      - uses: actions/checkout@v4
+      - run: python3 scripts/verify-seals.py
